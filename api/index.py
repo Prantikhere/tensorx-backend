@@ -76,11 +76,15 @@ async def get_current_user(request: Request) -> dict:
 @app.post("/api/auth/session")
 async def create_session(request: Request, response: Response):
     """Process session_id from Emergent Auth and create local session"""
-    body = await request.json()
+    try:
+        body = await request.json()
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": f"Invalid JSON: {str(e)}"})
+    
     session_id = body.get("session_id")
     
     if not session_id:
-        raise HTTPException(status_code=400, detail="session_id required")
+        return JSONResponse(status_code=400, content={"error": "session_id required"})
     
     # Bypass for testing
     if session_id == "test_session_id":
@@ -107,7 +111,11 @@ async def create_session(request: Request, response: Response):
     name = auth_data.get("name")
     picture = auth_data.get("picture")
     
-    conn = get_db_connection()
+    try:
+        conn = get_db_connection()
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": f"Database connection failed: {str(e)}"})
+    
     try:
         cur = conn.cursor()
         
@@ -169,6 +177,8 @@ async def create_session(request: Request, response: Response):
             },
             "session_token": session_token
         }
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": f"Database operation failed: {str(e)}"})
     finally:
         conn.close()
 
