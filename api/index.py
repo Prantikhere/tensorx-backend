@@ -570,10 +570,17 @@ async def health_check():
 async def root():
     return {"message": "TensorX API", "version": "1.0.0"}
 
-# CORS configuration
+# CORS configuration - specific origins required for credentials
+allowed_origins = [
+    "https://tensorx-frontend.vercel.app",
+    "https://tensorx.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:3001",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
